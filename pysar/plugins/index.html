@@ -1,60 +1,419 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mriya Lab</title>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: 'Oswald', sans-serif;
-        }
-        h1 {
-            color: #fff;
-            font-size: 4rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            text-align: center;
-        }
-        body {
-            flex-direction: column;
-            gap: 2rem;
-        }
-        ul {
-            list-style: none;
-        }
-        li {
-            margin: 0.5rem 0;
-        }
-        a {
-            color: #fff;
-            font-family: 'Oswald', sans-serif;
-            font-size: 1.5rem;
-            text-decoration: none;
-            border-bottom: 2px solid #fff;
-        }
-        a:hover {
-            color: #ccc;
-            border-bottom-color: #ccc;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pysar IDE Plugins — Rider, VS Code &amp; Visual Studio | Mriya Lab</title>
+<meta name="description" content="Design-time preview and compile-time binding validation for Pysar reports, right in your editor. Plugins for Rider, VS Code and Visual Studio.">
+<link rel="icon" type="image/svg+xml" href="../../icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --color-background:#FFFFFF;
+    --color-surface:#FFFFFF;
+    --color-primary:#23201B;
+    --color-secondary:#2A2825;
+    --color-accent:#1D7A4A;
+    --color-accent-dim:#146238;
+    --color-foreground:#141312;
+    --color-muted-fg:#5A5750;
+    --color-muted:#F0EEEA;
+    --color-border:#E2DFD8;
+    --color-warning:#B45309;
+    --code-bg:#0B1120;
+    --code-surface:#141B2E;
+    --code-border:#232C42;
+    --code-fg:#8A867C;
+    --radius:12px;
+    --font-sans:'DM Sans',system-ui,-apple-system,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',monospace;
+    --container:1120px;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.01ms !important;transition-duration:0.01ms !important;}
+  }
+  body{
+    background:var(--color-background);
+    color:var(--color-foreground);
+    font-family:var(--font-sans);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(600px circle at 15% 0%, rgba(29,122,74,0.06), transparent 60%),
+      radial-gradient(800px circle at 100% 20%, rgba(90,87,80,0.05), transparent 55%);
+    background-repeat:no-repeat;
+  }
+  a{color:inherit;text-decoration:none;}
+  ul{list-style:none;}
+  :focus-visible{outline:2px solid var(--color-accent);outline-offset:3px;border-radius:4px;}
+  .container{width:100%;max-width:var(--container);margin-inline:auto;padding-inline:24px;}
+
+  header.nav{
+    position:sticky;top:0;z-index:100;
+    background:rgba(255,255,255,0.96);
+    border-bottom:1px solid var(--color-border);
+  }
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding-block:16px;gap:16px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem;letter-spacing:-0.01em;}
+  .brand-mark{
+    width:30px;height:30px;border-radius:8px;
+    display:block;overflow:hidden;flex-shrink:0;
+  }
+  .breadcrumb{font-size:0.85rem;color:var(--color-muted-fg);white-space:nowrap;}
+  .breadcrumb a{color:var(--color-muted-fg);transition:color .18s var(--ease);}
+  .breadcrumb a:hover{color:var(--color-foreground);}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    font-weight:600;font-size:0.925rem;padding:12px 22px;border-radius:9px;
+    border:1px solid transparent;cursor:pointer;
+    transition:opacity .15s, color .15s, border-color .15s, transform .15s;
+    white-space:nowrap;
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn-primary{background:var(--color-foreground);color:#FFFFFF;}
+  .btn-primary:hover{opacity:0.8;}
+  .btn-secondary{background:transparent;border-color:var(--color-border);color:var(--color-foreground);}
+  .btn-secondary:hover{border-color:var(--color-secondary);}
+  .btn-disabled{background:var(--color-muted);color:var(--color-muted-fg);cursor:not-allowed;border-color:var(--color-border);}
+  .btn svg{width:16px;height:16px;flex-shrink:0;}
+
+  /* ---------- MOTION ---------- */
+  @keyframes fadeUp{
+    0%{opacity:0;transform:translateY(20px);}
+    100%{opacity:1;transform:translateY(0);}
+  }
+  .fade-in-up{animation:fadeUp 0.5s ease both;}
+  .fade-up{
+    opacity:0;
+    transform:translateY(24px);
+    transition:opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
+  }
+  .fade-up.visible{opacity:1;transform:translateY(0);}
+  @media (prefers-reduced-motion: reduce){
+    .fade-in-up{animation:none;opacity:1;transform:none;}
+    .fade-up{opacity:1;transform:none;transition:none;}
+  }
+
+  .hero{padding-block:72px 48px;text-align:center;}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;font-size:0.8rem;font-weight:600;
+    color:var(--color-accent);background:rgba(29,122,74,0.08);
+    border:1px solid rgba(29,122,74,0.22);padding:6px 14px;border-radius:999px;margin-bottom:26px;
+  }
+  h1.hero-title{
+    font-size:clamp(2rem,4.6vw,3.2rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;
+    max-width:760px;margin-inline:auto;
+  }
+  .hero-sub{max-width:620px;margin:20px auto 0;font-size:1.08rem;color:var(--color-muted-fg);}
+
+  /* pricing notice */
+  .notice{
+    display:flex;gap:14px;align-items:flex-start;
+    background:#FFFBEB;border:1px solid #FDE68A;
+    border-radius:var(--radius);
+    padding:18px 22px;
+    max-width:720px;
+    margin:36px auto 0;
+    text-align:left;
+  }
+  .notice svg{width:20px;height:20px;color:var(--color-warning);flex-shrink:0;margin-top:2px;}
+  .notice p{font-size:0.92rem;color:#78350F;}
+  .notice strong{color:#78350F;}
+
+  section{padding-block:64px;}
+  .section-head{text-align:center;max-width:640px;margin:0 auto 48px;}
+  .section-tag{font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-accent);margin-bottom:14px;}
+  .section-head h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:12px;}
+  .section-head p{color:var(--color-muted-fg);font-size:1.02rem;}
+
+  /* preview screenshot stack */
+  .dashboard-wrap{padding:0 20px 70px;max-width:920px;margin:0 auto;}
+  .dashboard-stack{
+    position:relative;width:100%;aspect-ratio:16/11;
+    opacity:0;transform:translateY(24px);
+    transition:opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1);
+  }
+  .dashboard-stack.visible{opacity:1;transform:translateY(0);}
+  .dashboard-card{position:absolute;border-radius:12px;overflow:hidden;transition:transform .4s cubic-bezier(.22,1,.36,1);}
+  .dashboard-card img{display:block;width:100%;height:auto;}
+  .dashboard-front{width:70%;top:0;left:0;z-index:3;}
+  .dashboard-mid{width:70%;top:12%;left:15%;z-index:2;}
+  .dashboard-back{width:70%;top:24%;left:30%;z-index:1;}
+  .dashboard-front:hover, .dashboard-mid:hover, .dashboard-back:hover{transform:scale(1.03);}
+  @media (prefers-reduced-motion: reduce){
+    .dashboard-stack{transition:none;}
+  }
+  .plugin-shot{width:100%;border-radius:8px;border:1px solid var(--color-border);margin-bottom:18px;display:block;transition:transform .3s cubic-bezier(.16,1,.3,1);}
+  .plugin-shot:hover{transform:scale(1.02);}
+  /* plugin cards */
+  .plugins-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .plugin-card{
+    background:var(--color-surface);
+    border:1px solid var(--color-border);
+    border-radius:var(--radius);
+    padding:28px;
+    display:flex;flex-direction:column;
+  }
+  .plugin-card.is-available{border-color:rgba(29,122,74,0.25);}
+  .plugin-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+  .plugin-icon{
+    width:44px;height:44px;border-radius:10px;
+    background:var(--color-muted);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .plugin-icon svg{width:22px;height:22px;color:var(--color-foreground);}
+  .plugin-icon-logo{background:var(--color-surface);}
+  .plugin-icon-logo img{width:26px;height:26px;object-fit:contain;display:block;}
+  .status-badge{
+    font-size:0.7rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;
+    padding:4px 10px;border-radius:999px;
+  }
+  .status-badge.available{background:rgba(29,122,74,0.12);color:var(--color-accent);}
+  .status-badge.dev{background:rgba(180,83,9,0.12);color:var(--color-warning);}
+  .plugin-name{font-size:1.15rem;font-weight:700;margin-bottom:6px;}
+  .plugin-version{font-family:var(--font-mono);font-size:0.78rem;color:var(--color-muted-fg);margin-bottom:14px;}
+  .plugin-desc{font-size:0.9rem;color:var(--color-muted-fg);margin-bottom:22px;flex-grow:1;}
+  .plugin-actions{margin-top:auto;}
+
+  .feature-strip{display:flex;flex-direction:column;gap:16px;margin-top:44px;max-width:760px;margin-inline:auto;}
+  .feature-row{display:flex;gap:14px;align-items:flex-start;}
+  .feature-row .feature-icon{
+    width:34px;height:34px;border-radius:9px;background:rgba(29,122,74,0.1);color:var(--color-accent);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .feature-row .feature-icon svg{width:17px;height:17px;}
+  .feature-row h3{font-size:0.98rem;font-weight:600;margin-bottom:3px;}
+  .feature-row p{font-size:0.88rem;color:var(--color-muted-fg);}
+
+  footer{padding-block:48px 36px;}
+  .footer-links{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;}
+  .footer-links a{font-size:0.88rem;color:var(--color-muted-fg);transition:color .18s var(--ease);}
+  .footer-links a:hover{color:var(--color-foreground);}
+  .footer-bottom{text-align:center;font-size:0.8rem;color:var(--color-muted-fg);}
+
+  @media (max-width:860px){
+    .plugins-grid{grid-template-columns:1fr;}
+  }
+  @media (max-width:520px){
+    .notice{flex-direction:column;}
+  }
+</style>
 </head>
 <body>
-    <h1>PYSAR IDE PLUGINS.</h1>
-    <ul>
-        <li><a href="Rider/pysar-rider-0.0.32.zip">Rider</a></li>
-        <li><a href="VSCode/pysar-0.0.3.vsix">VS Code</a></li>
-    </ul>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a href="../../index.html" class="brand">
+      <img class="brand-mark" src="../../icon.svg" alt="Mriya Lab">
+      Mriya Lab
+    </a>
+    <span class="breadcrumb"><a href="../../index.html">Products</a> / <a href="../index.html">Pysar</a> / IDE Plugins</span>
+    <a class="btn btn-secondary" href="https://github.com/MriyaLab/Pysar" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero container">
+    <span class="eyebrow fade-in-up" style="animation-delay:0s">Editor tooling</span>
+    <h1 class="hero-title fade-in-up" style="animation-delay:.08s">Two plugins. One free, one on the way.</h1>
+    <p class="hero-sub fade-in-up" style="animation-delay:.16s"><code style="font-family:var(--font-mono);">.rxaml</code> syntax highlighting is free today, in every editor we support. A full visual report designer, <strong>Pysar.Design</strong>, is in development next.</p>
+  </section>
+
+  <!-- SYNTAX HIGHLIGHTING -->
+  <section id="highlighting" class="container">
+    <div class="section-head fade-up">
+      <p class="section-tag">Pysar (syntax highlighting)</p>
+      <h2>Completely free. No trial, no license.</h2>
+      <p>The Pysar plugin colors <code style="font-family:var(--font-mono);">.rxaml</code> markup in your editor — elements, bindings, attributes. Nothing is gated, and nothing will be added later that changes that.</p>
+    </div>
+    <div class="plugins-grid">
+
+      <div class="plugin-card is-available fade-up">
+        <div class="plugin-top">
+          <div class="plugin-icon plugin-icon-logo">
+            <img src="../../assets/logos/rider.webp" alt="">
+          </div>
+          <span class="status-badge available">Free forever</span>
+        </div>
+        <h3 class="plugin-name">Rider</h3>
+        <p class="plugin-version">v0.0.32 · manual install</p>
+        <p class="plugin-desc">Full <code style="font-family:var(--font-mono);">.rxaml</code> grammar highlighting, with bracket matching and code folding.</p>
+        <div class="plugin-actions">
+          <a class="btn btn-primary" href="Rider/pysar-rider-0.0.32.zip" style="width:100%;">Download .zip</a>
+        </div>
+      </div>
+
+      <div class="plugin-card is-available fade-up" style="transition-delay:.06s">
+        <div class="plugin-top">
+          <div class="plugin-icon plugin-icon-logo">
+            <img src="../../assets/logos/vscode.svg" alt="">
+          </div>
+          <span class="status-badge available">Free forever</span>
+        </div>
+        <h3 class="plugin-name">VS Code</h3>
+        <p class="plugin-version">v0.0.3 · manual install</p>
+        <p class="plugin-desc">The same <code style="font-family:var(--font-mono);">.rxaml</code> highlighting inside VS Code, for teams already using it for the rest of a .NET solution.</p>
+        <div class="plugin-actions">
+          <a class="btn btn-primary" href="VSCode/pysar-0.0.3.vsix" style="width:100%;">Download .vsix</a>
+        </div>
+      </div>
+
+      <div class="plugin-card fade-up" style="transition-delay:.12s">
+        <div class="plugin-top">
+          <div class="plugin-icon plugin-icon-logo">
+            <img src="../../assets/logos/vs.svg" alt="">
+          </div>
+          <span class="status-badge dev">Free · in development</span>
+        </div>
+        <h3 class="plugin-name">Visual Studio</h3>
+        <p class="plugin-version">not yet available</p>
+        <p class="plugin-desc">Syntax highlighting for Visual Studio is on the roadmap — free like the others, no build to install yet.</p>
+        <div class="plugin-actions">
+          <button class="btn btn-disabled" style="width:100%;" disabled>Coming soon</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PYSAR.DESIGN -->
+  <section id="design" class="container">
+    <div class="section-head fade-up">
+      <p class="section-tag">Pysar.Design</p>
+      <h2>A visual designer for .rxaml reports</h2>
+      <p>Drag, drop and preview bands, repeaters and bindings on a real paginated canvas — the same layout <code style="font-family:var(--font-mono);">SkiaReportRenderer</code> produces at build time, without leaving your IDE.</p>
+    </div>
+
+    <div class="notice fade-up" role="note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L14.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+      <p><strong>Pysar.Design is in early development.</strong> No build is available yet, for any editor. It will most likely ship as a paid product once released — pricing isn't finalized. The syntax-highlighting plugin above stays free regardless.</p>
+    </div>
+
+    <div class="dashboard-wrap">
+      <div class="dashboard-stack">
+        <div class="dashboard-card dashboard-front">
+          <img src="assets/design-vscode.png" alt="Early Pysar.Design preview pane in VS Code, showing a .rxaml source file next to a rendered report preview">
+        </div>
+        <div class="dashboard-card dashboard-mid">
+          <img src="assets/design-rider.png" alt="Early Pysar.Design preview pane in Rider">
+        </div>
+        <div class="dashboard-card dashboard-back">
+          <img src="assets/design-vs.png" alt="Early Pysar.Design preview pane in Visual Studio">
+        </div>
+      </div>
+    </div>
+
+    <div class="plugins-grid" style="margin-top:44px;">
+
+      <div class="plugin-card fade-up">
+        <img class="plugin-shot" src="assets/design-rider.png" alt="Early Pysar.Design preview pane in Rider">
+        <div class="plugin-top">
+          <div class="plugin-icon plugin-icon-logo">
+            <img src="../../assets/logos/rider.webp" alt="">
+          </div>
+          <span class="status-badge dev">In development</span>
+        </div>
+        <h3 class="plugin-name">Rider</h3>
+        <p class="plugin-version">not yet available</p>
+        <p class="plugin-desc">The visual report designer for Rider. Likely paid at release — no price set yet.</p>
+        <div class="plugin-actions">
+          <button class="btn btn-disabled" style="width:100%;" disabled>Coming soon</button>
+        </div>
+      </div>
+
+      <div class="plugin-card fade-up" style="transition-delay:.06s">
+        <img class="plugin-shot" src="assets/design-vs.png" alt="Early Pysar.Design preview pane in Visual Studio">
+        <div class="plugin-top">
+          <div class="plugin-icon plugin-icon-logo">
+            <img src="../../assets/logos/vs.svg" alt="">
+          </div>
+          <span class="status-badge dev">In development</span>
+        </div>
+        <h3 class="plugin-name">Visual Studio</h3>
+        <p class="plugin-version">not yet available</p>
+        <p class="plugin-desc">The same designer for Visual Studio. Likely paid at release — no price set yet.</p>
+        <div class="plugin-actions">
+          <button class="btn btn-disabled" style="width:100%;" disabled>Coming soon</button>
+        </div>
+      </div>
+
+      <div class="plugin-card fade-up" style="transition-delay:.12s">
+        <img class="plugin-shot" src="assets/design-vscode.png" alt="Early Pysar.Design preview pane in VS Code">
+        <div class="plugin-top">
+          <div class="plugin-icon plugin-icon-logo">
+            <img src="../../assets/logos/vscode.svg" alt="">
+          </div>
+          <span class="status-badge dev">In development</span>
+        </div>
+        <h3 class="plugin-name">VS Code</h3>
+        <p class="plugin-version">not yet available</p>
+        <p class="plugin-desc">The same designer for VS Code. Likely paid at release — no price set yet.</p>
+        <div class="plugin-actions">
+          <button class="btn btn-disabled" style="width:100%;" disabled>Coming soon</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="feature-strip fade-up">
+      <div class="feature-row">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+        <div>
+          <h3>Paginated preview</h3>
+          <p>Step through every page of a report, zoom, and see repeaters and detail bands resolve exactly as they will at render time.</p>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></div>
+        <div>
+          <h3>Binding diagnostics inline</h3>
+          <p>The same PQX010 / PQX011 checks the source generator runs at build time surface as editor diagnostics as you type.</p>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/></svg></div>
+        <div>
+          <h3>Design-time data</h3>
+          <p>Preview against <code style="font-family:var(--font-mono);">d:DataContext</code> sample data, so the layout is visible before real data exists.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-links">
+      <a href="../../index.html">Mriya Lab</a>
+      <a href="../index.html">Pysar</a>
+      <a href="https://github.com/MriyaLab/Pysar" target="_blank" rel="noopener">GitHub</a>
+      <a href="../../license.md">License</a>
+    </div>
+    <p class="footer-bottom">&copy; 2026 Mriya Lab. Plugin pricing is not final and may change before 1.0.</p>
+  </div>
+</footer>
+
+<script>
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          io.unobserve(entry.target);
+        }
+      }
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.fade-up, .dashboard-stack').forEach((el) => io.observe(el));
+  } else {
+    document.querySelectorAll('.fade-up, .dashboard-stack').forEach((el) => el.classList.add('visible'));
+  }
+</script>
 </body>
 </html>

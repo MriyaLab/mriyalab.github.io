@@ -1,34 +1,644 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mriya Lab</title>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: 'Oswald', sans-serif;
-        }
-        h1 {
-            color: #fff;
-            font-size: 4rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mriya Lab — Developer tools that respect your stack</title>
+<meta name="description" content="Mriya Lab builds cross-platform .NET developer tools. Pysar is our vector report engine for PDF and document generation — one codebase, every platform.">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --color-background:#FFFFFF;
+    --color-surface:#FFFFFF;
+    --color-primary:#23201B;
+    --color-secondary:#2A2825;
+    --color-accent:#1D7A4A;
+    --color-accent-dim:#146238;
+    --color-foreground:#141312;
+    --color-muted-fg:#5A5750;
+    --color-muted:#F0EEEA;
+    --color-border:#E2DFD8;
+    --color-destructive:#DC2626;
+    --code-bg:#0B1120;
+    --code-surface:#141B2E;
+    --code-border:#232C42;
+    --code-fg:#8A867C;
+    --radius:12px;
+    --font-sans:'DM Sans',system-ui,-apple-system,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',monospace;
+    --container:1120px;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html{scroll-behavior:smooth;}
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.01ms !important;transition-duration:0.01ms !important;}
+  }
+
+  body{
+    background:var(--color-background);
+    color:var(--color-foreground);
+    font-family:var(--font-sans);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    min-height:100dvh;
+  }
+
+  a{color:inherit;text-decoration:none;}
+  ul{list-style:none;}
+  img{max-width:100%;display:block;}
+
+  :focus-visible{
+    outline:2px solid var(--color-accent);
+    outline-offset:3px;
+    border-radius:4px;
+  }
+
+  .container{
+    width:100%;
+    max-width:var(--container);
+    margin-inline:auto;
+    padding-inline:24px;
+  }
+
+  /* background texture */
+  body{
+    background-image:
+      radial-gradient(600px circle at 15% 0%, rgba(29,122,74,0.06), transparent 60%),
+      radial-gradient(800px circle at 100% 20%, rgba(90,87,80,0.05), transparent 55%);
+    background-repeat:no-repeat;
+  }
+
+  /* ---------- NAV ---------- */
+  header.nav{
+    position:sticky;
+    top:0;
+    z-index:100;
+    background:rgba(255,255,255,0.96);
+    border-bottom:1px solid var(--color-border);
+  }
+  .nav-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding-block:16px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:700;
+    font-size:1.05rem;
+    letter-spacing:-0.01em;
+  }
+  .brand-mark{
+    width:30px;height:30px;border-radius:8px;
+    display:block;overflow:hidden;
+    flex-shrink:0;
+  }
+  nav.links{display:flex;align-items:center;gap:32px;}
+  nav.links a{
+    font-size:0.925rem;
+    color:var(--color-muted-fg);
+    font-weight:500;
+    transition:color .18s var(--ease);
+    cursor:pointer;
+  }
+  nav.links a:hover{color:var(--color-foreground);}
+  .nav-cta{
+    display:flex;align-items:center;gap:12px;
+  }
+  .icon-btn{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:38px;height:38px;border-radius:8px;
+    border:1px solid var(--color-border);
+    color:var(--color-muted-fg);
+    transition:all .18s var(--ease);
+    cursor:pointer;
+  }
+  .icon-btn:hover{color:var(--color-foreground);border-color:var(--color-secondary);}
+  .menu-toggle{display:none;}
+
+  /* ---------- BUTTONS ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    font-family:var(--font-sans);
+    font-weight:600;
+    font-size:0.925rem;
+    padding:12px 22px;
+    border-radius:9px;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:opacity .15s, color .15s, border-color .15s, transform .15s;
+    white-space:nowrap;
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn-primary{
+    background:var(--color-foreground);
+    color:#FFFFFF;
+  }
+  .btn-primary:hover{opacity:0.8;}
+  .btn-secondary{
+    background:transparent;
+    border-color:var(--color-border);
+    color:var(--color-foreground);
+  }
+  .btn-secondary:hover{border-color:var(--color-secondary);}
+  .btn-ghost{
+    background:transparent;color:var(--color-muted-fg);
+    padding:8px 14px;font-weight:500;
+  }
+  .btn-ghost:hover{color:var(--color-foreground);}
+  .btn svg{width:16px;height:16px;flex-shrink:0;}
+
+  /* ---------- MOTION ---------- */
+  @keyframes fadeUp{
+    0%{opacity:0;transform:translateY(20px);}
+    100%{opacity:1;transform:translateY(0);}
+  }
+  .fade-in-up{animation:fadeUp 0.5s ease both;}
+  .fade-up{
+    opacity:0;
+    transform:translateY(24px);
+    transition:opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
+  }
+  .fade-up.visible{opacity:1;transform:translateY(0);}
+  @media (prefers-reduced-motion: reduce){
+    .fade-in-up{animation:none;opacity:1;transform:none;}
+    .fade-up{opacity:1;transform:none;transition:none;}
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    padding-block:96px 72px;
+    text-align:center;
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:0.8rem;font-weight:600;
+    color:var(--color-accent);
+    background:rgba(29,122,74,0.08);
+    border:1px solid rgba(29,122,74,0.22);
+    padding:6px 14px;border-radius:999px;
+    margin-bottom:28px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--color-accent);box-shadow:0 0 8px var(--color-accent);}
+  h1.hero-title{
+    font-size:clamp(2.4rem,5.2vw,4.2rem);
+    font-weight:800;
+    letter-spacing:-0.03em;
+    line-height:1.08;
+    max-width:820px;
+    margin-inline:auto;
+  }
+  h1.hero-title .accent{color:var(--color-muted-fg);font-weight:300;}
+  .hero-sub{
+    max-width:620px;
+    margin:24px auto 0;
+    font-size:1.125rem;
+    color:var(--color-muted-fg);
+  }
+  .hero-actions{
+    display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
+    margin-top:36px;
+  }
+  .hero-note{
+    margin-top:20px;
+    font-size:0.85rem;
+    color:var(--color-muted-fg);
+  }
+  .hero-note code{
+    font-family:var(--font-mono);
+    background:var(--color-muted);
+    padding:2px 8px;
+    border-radius:5px;
+    color:var(--color-foreground);
+  }
+
+  /* platform strip */
+  .platform-strip{
+    margin-top:64px;
+  }
+  .platform-strip p{
+    text-align:center;
+    font-size:0.8rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--color-muted-fg);
+    margin-bottom:20px;
+  }
+  .platform-row{
+    display:flex;justify-content:center;align-items:center;
+    flex-wrap:wrap;gap:14px;
+  }
+  .platform-chip{
+    display:flex;align-items:center;gap:8px;
+    font-size:0.85rem;font-weight:500;
+    color:var(--color-muted-fg);
+    border:1px solid var(--color-border);
+    background:var(--color-surface);
+    padding:9px 16px;border-radius:999px;
+  }
+  .platform-chip svg{width:15px;height:15px;color:var(--color-accent);flex-shrink:0;}
+
+  /* ---------- SECTION HEADER ---------- */
+  section{padding-block:88px;}
+  .section-head{
+    text-align:center;
+    max-width:640px;
+    margin:0 auto 56px;
+  }
+  .section-tag{
+    font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--color-accent);margin-bottom:14px;
+  }
+  .section-head h2{
+    font-size:clamp(1.7rem,3vw,2.4rem);
+    font-weight:700;letter-spacing:-0.02em;
+    margin-bottom:14px;
+  }
+  .section-head p{color:var(--color-muted-fg);font-size:1.05rem;}
+
+  /* ---------- PRODUCTS ---------- */
+  .products-grid{
+    display:grid;
+    grid-template-columns:1.3fr 1fr;
+    gap:24px;
+  }
+  .card{
+    background:var(--color-surface);
+    border:1px solid var(--color-border);
+    border-radius:var(--radius);
+    padding:32px;
+    transition:border-color .2s var(--ease), transform .2s var(--ease);
+  }
+  .card-featured{
+    border-color:rgba(29,122,74,0.25);
+    background:linear-gradient(160deg,var(--color-surface),rgba(29,122,74,0.04));
+    display:flex;flex-direction:column;
+  }
+  .card-featured:hover{transform:translateY(-3px);}
+  .product-badge{
+    display:inline-flex;align-items:center;gap:6px;
+    align-self:flex-start;
+    font-size:0.72rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;
+    color:#FFFFFF;background:var(--color-accent);
+    padding:4px 10px;border-radius:999px;
+    margin-bottom:20px;
+  }
+  .product-name{font-size:1.6rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:10px;}
+  .product-desc{color:var(--color-muted-fg);font-size:0.98rem;margin-bottom:24px;max-width:46ch;}
+  .product-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;}
+  .tag{
+    font-size:0.78rem;font-family:var(--font-mono);
+    color:var(--color-muted-fg);
+    border:1px solid var(--color-border);
+    padding:4px 10px;border-radius:6px;
+  }
+  .card-featured .card-actions{margin-top:auto;display:flex;gap:12px;flex-wrap:wrap;}
+
+  .card-soon{
+    display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
+    border-style:dashed;
+    color:var(--color-muted-fg);
+  }
+  .card-soon .product-name{color:var(--color-muted-fg);font-size:1.3rem;}
+  .card-soon p{font-size:0.92rem;}
+  .card-soon .icon-wrap{
+    width:44px;height:44px;border-radius:10px;
+    background:var(--color-muted);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:18px;
+    color:var(--color-muted-fg);
+  }
+  .card-soon .icon-wrap svg{width:22px;height:22px;}
+
+  /* ---------- CODE SHOWCASE ---------- */
+  .showcase{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:56px;
+    align-items:center;
+  }
+  .feature-list{display:flex;flex-direction:column;gap:22px;margin-top:32px;}
+  .feature-item{display:flex;gap:14px;align-items:flex-start;}
+  .feature-icon{
+    width:36px;height:36px;border-radius:9px;
+    background:rgba(29,122,74,0.1);
+    color:var(--color-accent);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .feature-icon svg{width:18px;height:18px;}
+  .feature-item h3{font-size:1rem;font-weight:600;margin-bottom:4px;}
+  .feature-item p{font-size:0.92rem;color:var(--color-muted-fg);}
+
+  .code-window{
+    background:var(--code-bg);
+    color:#E2DFD8;
+    border:1px solid var(--code-border);
+    border-radius:var(--radius);
+    overflow:hidden;
+    box-shadow:0 30px 60px -30px rgba(20,19,18,0.25);
+    transition:transform .3s cubic-bezier(.16,1,.3,1);
+  }
+  .code-window:hover{transform:scale(1.015);}
+  .code-titlebar{
+    display:flex;align-items:center;gap:8px;
+    padding:12px 16px;
+    background:var(--code-surface);
+    border-bottom:1px solid var(--code-border);
+  }
+  .code-dot{width:11px;height:11px;border-radius:50%;}
+  .code-dot.r{background:#EF4444;}
+  .code-dot.y{background:#F59E0B;}
+  .code-dot.g{background:#22C55E;}
+  .code-filename{margin-left:8px;font-size:0.78rem;color:var(--code-fg);font-family:var(--font-mono);}
+  pre.code-body{
+    padding:24px;
+    overflow-x:auto;
+    font-family:var(--font-mono);
+    font-size:0.85rem;
+    line-height:1.7;
+  }
+  pre.code-body code{white-space:pre;}
+  .tok-kw{color:#c084fc;}
+  .tok-type{color:#5eead4;}
+  .tok-str{color:#fda4af;}
+  .tok-fn{color:#7dd3fc;}
+  .tok-com{color:#5b6a8a;}
+  .tok-def{color:#E2DFD8;}
+
+  /* ---------- CTA ---------- */
+  .cta-section{
+    background:var(--color-surface);
+    border-top:1px solid var(--color-border);
+    border-bottom:1px solid var(--color-border);
+  }
+  .cta-inner{
+    text-align:center;
+    max-width:640px;
+    margin-inline:auto;
+  }
+  .cta-inner h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:16px;}
+  .cta-inner p{color:var(--color-muted-fg);margin-bottom:32px;}
+  .install-box{
+    display:inline-flex;align-items:center;gap:14px;
+    background:var(--color-background);
+    border:1px solid var(--color-border);
+    border-radius:9px;
+    padding:12px 12px 12px 20px;
+    font-family:var(--font-mono);
+    font-size:0.9rem;
+    margin-bottom:28px;
+  }
+  .install-box span{color:var(--color-accent);}
+  .copy-btn{
+    display:flex;align-items:center;justify-content:center;
+    width:34px;height:34px;border-radius:6px;
+    border:1px solid var(--color-border);
+    background:transparent;color:var(--color-muted-fg);
+    cursor:pointer;transition:all .18s var(--ease);
+  }
+  .copy-btn:hover{color:var(--color-foreground);border-color:var(--color-secondary);}
+  .copy-btn svg{width:15px;height:15px;}
+  .cta-inner .hero-actions{margin-top:0;}
+
+  /* ---------- FOOTER ---------- */
+  footer{padding-block:56px 40px;}
+  .footer-inner{
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;
+    padding-bottom:28px;
+    border-bottom:1px solid var(--color-border);
+    margin-bottom:24px;
+  }
+  .footer-links{display:flex;gap:28px;flex-wrap:wrap;}
+  .footer-links a{font-size:0.9rem;color:var(--color-muted-fg);transition:color .18s var(--ease);cursor:pointer;}
+  .footer-links a:hover{color:var(--color-foreground);}
+  .footer-bottom{
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+    font-size:0.82rem;color:var(--color-muted-fg);
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:860px){
+    nav.links{display:none;}
+    .menu-toggle{display:inline-flex;}
+    .products-grid{grid-template-columns:1fr;}
+    .showcase{grid-template-columns:1fr;gap:40px;}
+    .showcase .code-window{order:-1;}
+  }
+  @media (max-width:520px){
+    .hero{padding-block:64px 48px;}
+    section{padding-block:64px;}
+    .install-box{flex-direction:row;font-size:0.78rem;padding:10px 10px 10px 14px;}
+    .card{padding:24px;}
+  }
+</style>
 </head>
 <body>
-    <h1>COMING SOON.</h1>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a href="#top" class="brand">
+      <img class="brand-mark" src="icon.svg" alt="Mriya Lab">
+      Mriya Lab
+    </a>
+    <nav class="links" aria-label="Primary">
+      <a href="#products">Products</a>
+      <a href="#pysar">Pysar</a>
+      <a href="#showcase">Docs</a>
+      <a href="https://github.com/MriyaLab" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="icon-btn" href="https://github.com/MriyaLab" target="_blank" rel="noopener" aria-label="Mriya Lab on GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.6-4.04-1.6-.55-1.38-1.34-1.75-1.34-1.75-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.53.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"/></svg>
+      </a>
+      <a class="btn btn-primary" href="#pysar">Explore Pysar</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero container">
+    <span class="eyebrow fade-in-up" style="animation-delay:0s"><span class="dot"></span> Now shipping — Pysar 0.x, open source</span>
+    <h1 class="hero-title fade-in-up" style="animation-delay:.08s">Developer tools that respect <span class="accent">your stack.</span></h1>
+    <p class="hero-sub fade-in-up" style="animation-delay:.16s">Mriya Lab builds cross-platform .NET libraries with no hidden fees, no vendor lock-in, and no Windows-only asterisks. First up: Pysar, a vector report engine that runs everywhere .NET does.</p>
+    <div class="hero-actions fade-in-up" style="animation-delay:.22s">
+      <a class="btn btn-primary" href="#pysar">
+        Explore Pysar
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a class="btn btn-secondary" href="https://github.com/MriyaLab" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.6-4.04-1.6-.55-1.38-1.34-1.75-1.34-1.75-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.53.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"/></svg>
+        View source
+      </a>
+    </div>
+    <p class="hero-note fade-in-up" style="animation-delay:.28s">dotnet add package <code>Pysar</code> — MIT licensed, plain .NET on top of SkiaSharp</p>
+
+    <div class="platform-strip fade-in-up" style="animation-delay:.34s">
+      <p>One report definition, rendered natively on</p>
+      <div class="platform-row">
+        <span class="platform-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> .NET MAUI</span>
+        <span class="platform-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> Avalonia</span>
+        <span class="platform-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> WPF</span>
+        <span class="platform-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> Blazor</span>
+        <span class="platform-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> Rider &amp; VS Code</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section id="products" class="container">
+    <div class="section-head fade-up">
+      <p class="section-tag">Products</p>
+      <h2>One product live. More on the way.</h2>
+      <p>Mriya Lab is a small studio building focused, well-engineered .NET tooling — one product at a time.</p>
+    </div>
+    <div class="products-grid">
+      <div class="card card-featured fade-up" id="pysar">
+        <span class="product-badge">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M12 2 2 7l10 5 10-5-10-5Zm0 7L2 14l10 5 10-5-10-5Z"/></svg>
+          Flagship
+        </span>
+        <h3 class="product-name">Pysar</h3>
+        <p class="product-desc">A report engine for .NET. Describe a paginated document once — in XAML markup or a fluent C# builder — and get a vector PDF, bitmap pages, or a scrollable, zoomable in-app viewer.</p>
+        <div class="product-tags">
+          <span class="tag">Vector PDF</span>
+          <span class="tag">SkiaSharp</span>
+          <span class="tag">.rxaml</span>
+          <span class="tag">MIT</span>
+        </div>
+        <div class="card-actions">
+          <a class="btn btn-primary" href="pysar/index.html">Open Pysar page</a>
+          <a class="btn btn-secondary" href="pysar/plugins/index.html">IDE plugins</a>
+        </div>
+      </div>
+      <div class="card card-soon fade-up" style="transition-delay:0.08s">
+        <div class="icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg>
+        </div>
+        <h3 class="product-name">Next product</h3>
+        <p>We ship deliberately, not often. Follow the repo to see what's next.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CODE SHOWCASE -->
+  <section id="showcase" class="container">
+    <div class="showcase">
+      <div class="fade-up">
+        <p class="section-tag">Why Pysar</p>
+        <h2 style="font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.02em;">A report is a document, not a UI.</h2>
+        <p style="color:var(--color-muted-fg);margin-top:14px;max-width:46ch;">Bindings resolve once, at build time. Pagination is real — detail rows slice across pages, headers repeat, and the same tree renders identically on every OS.</p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/></svg></div>
+            <div>
+              <h3>Two authoring styles</h3>
+              <p>.rxaml markup for fixed-shape reports, a fluent builder for structure computed at runtime — same object model.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg></div>
+            <div>
+              <h3>True cross-platform</h3>
+              <p>Plain .NET on top of SkiaSharp. Windows, macOS, Linux, Android, iOS and the browser render the same document.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <div>
+              <h3>Compile-time validation</h3>
+              <p>The .rxaml source generator checks {Binding} paths against x:DataType at build time — not at render time.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="code-window fade-up" style="transition-delay:0.1s">
+        <div class="code-titlebar">
+          <span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>
+          <span class="code-filename">Invoice.cs</span>
+        </div>
+        <pre class="code-body"><code><span class="tok-kw">var</span> report = <span class="tok-type">ReportBuilder</span>.<span class="tok-fn">Create</span>(<span class="tok-str">"Hello report"</span>)
+    .<span class="tok-fn">WithPageFormat</span>(<span class="tok-kw">new</span> <span class="tok-type">PageFormat</span> { Margin = <span class="tok-kw">new</span> <span class="tok-type">Thickness</span>(30) })
+    .<span class="tok-fn">WithDetail</span>(detail =&gt; detail
+        .<span class="tok-fn">AddElement</span>(<span class="tok-kw">new</span> <span class="tok-type">Text</span> {
+            Content = <span class="tok-str">"Hello from Pysar"</span>
+        }))
+    .<span class="tok-fn">Build</span>();
+
+<span class="tok-com">// vector PDF, text stays selectable at any zoom</span>
+<span class="tok-kw">await new</span> <span class="tok-type">SkiaReportRenderer</span>()
+    .<span class="tok-fn">SavePdfAsync</span>(report, <span class="tok-str">"hello.pdf"</span>);</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container cta-inner fade-up">
+      <h2>Start with a single package.</h2>
+      <p>Add <code style="font-family:var(--font-mono);color:var(--color-foreground);">Pysar</code> to any .NET 10 project — bring a platform package when you need a viewer.</p>
+      <div class="install-box">
+        <span>dotnet add package Pysar</span>
+        <button class="copy-btn" type="button" aria-label="Copy install command" onclick="navigator.clipboard.writeText('dotnet add package Pysar'); this.querySelector('svg').outerHTML = '<svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'><path d=\'m5 12 5 5 9-9\'/></svg>';">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        </button>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="pysar/index.html">Read the docs</a>
+        <a class="btn btn-secondary" href="https://www.nuget.org/packages/Pysar" target="_blank" rel="noopener">View on NuGet</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <a href="#top" class="brand">
+        <img class="brand-mark" src="icon.svg" alt="Mriya Lab">
+        Mriya Lab
+      </a>
+      <div class="footer-links">
+        <a href="pysar/index.html">Pysar</a>
+        <a href="pysar/plugins/index.html">IDE Plugins</a>
+        <a href="https://github.com/MriyaLab" target="_blank" rel="noopener">GitHub</a>
+        <a href="license.md">License</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 Mriya Lab. All rights reserved.</span>
+      <span>Built on .NET &amp; SkiaSharp.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          io.unobserve(entry.target);
+        }
+      }
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.fade-up').forEach((el) => io.observe(el));
+  } else {
+    document.querySelectorAll('.fade-up').forEach((el) => el.classList.add('visible'));
+  }
+</script>
 </body>
 </html>
