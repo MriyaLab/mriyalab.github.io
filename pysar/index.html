@@ -117,6 +117,7 @@
   .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:32px;}
 
   section{padding-block:80px;}
+  section[id]{scroll-margin-top:80px;}
   .section-head{text-align:center;max-width:620px;margin:0 auto 48px;}
   .section-tag{font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-accent);margin-bottom:14px;}
   .section-head h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:12px;}
@@ -162,6 +163,67 @@
   .platform-card h3{font-size:0.95rem;font-weight:600;margin-bottom:4px;}
   .platform-card p{font-size:0.8rem;color:var(--color-muted-fg);}
 
+  /* Device mockups ship as transparent PNGs with their own corners and shadow,
+     so the stage stays frameless — height is reserved per shape to avoid CLS. */
+  .viewer{--stage-h:clamp(210px,50vw,710px);}
+  .viewer[data-shape="phone"]{--stage-h:clamp(430px,76vw,645px);}
+  .viewer-frame[hidden]{display:none;}
+
+  .viewer-tabs{
+    display:flex;justify-content:center;flex-wrap:wrap;gap:4px;width:max-content;max-width:100%;
+    margin:0 auto;padding:4px;
+    background:var(--color-muted);border:1px solid var(--color-border);border-radius:999px;
+  }
+  .viewer-tab{
+    display:inline-flex;align-items:center;justify-content:center;
+    min-height:44px;padding:0 20px;border:0;border-radius:999px;background:transparent;
+    font-family:inherit;font-size:0.9rem;font-weight:600;color:var(--color-muted-fg);cursor:pointer;
+    transition:color .18s var(--ease), background-color .18s var(--ease);
+  }
+  .viewer-tab:hover{color:var(--color-foreground);}
+  .viewer-tab[aria-selected="true"]{
+    background:var(--color-background);color:var(--color-foreground);
+    box-shadow:0 1px 3px rgba(20,19,18,0.14);
+  }
+
+  .viewer-platforms{display:flex;justify-content:center;flex-wrap:wrap;gap:4px;margin:14px auto 26px;}
+  .platform-tab{
+    display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 14px;
+    border:0;border-radius:9px;background:transparent;
+    font-family:inherit;font-size:0.85rem;font-weight:500;color:var(--color-muted-fg);cursor:pointer;
+    transition:color .18s var(--ease), background-color .18s var(--ease);
+  }
+  .platform-tab:hover{background:var(--color-muted);color:var(--color-foreground);}
+  .platform-tab[aria-selected="true"]{background:rgba(29,122,74,0.08);color:var(--color-accent-dim);font-weight:600;}
+  .platform-tab[data-soon]::after{
+    content:"soon";font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+    padding:2px 6px;border-radius:999px;background:var(--color-muted);color:var(--color-muted-fg);
+  }
+
+  /* minmax(0,1fr) pins the row to the stage height; an auto row would grow to the tallest mockup */
+  .viewer-stage{display:grid;grid-template-rows:minmax(0,1fr);height:var(--stage-h);transition:height .4s var(--ease);}
+  /* Panels stay laid out and are hidden with visibility, not display: display:none would
+     stop loading="lazy" from ever firing, so a freshly picked target opened on a blank stage. */
+  .viewer-panel{
+    grid-area:1/1;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;
+    visibility:hidden;
+  }
+  .viewer-panel.active{visibility:visible;animation:viewerIn .35s var(--ease) both;}
+  @keyframes viewerIn{0%{opacity:0;transform:scale(0.985);}100%{opacity:1;transform:none;}}
+  /* picture must not become the flex item, or the img's percentage sizing has no basis.
+     The img fills the stage and letterboxes with object-fit: sizing it from its intrinsic
+     ratio instead would leave it 0x0 until it loads, and a 0x0 lazy image never loads. */
+  .viewer-panel picture{display:contents;}
+  .viewer-panel img{display:block;width:100%;height:100%;object-fit:contain;}
+  .viewer-soon{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+    width:100%;height:100%;max-width:720px;padding:24px;text-align:center;
+    border:1px dashed var(--color-border);border-radius:var(--radius);
+    background:var(--color-surface);color:var(--color-muted-fg);
+  }
+  .viewer-soon svg{width:30px;height:30px;color:var(--color-muted-fg);opacity:0.5;}
+  .viewer-soon p{font-size:0.9rem;max-width:34ch;}
+
   .cta-section{background:var(--color-surface);border-top:1px solid var(--color-border);border-bottom:1px solid var(--color-border);}
   .cta-inner{text-align:center;max-width:600px;margin-inline:auto;}
   .cta-inner h2{font-size:clamp(1.5rem,3vw,2rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:14px;}
@@ -182,6 +244,11 @@
     nav.links{display:none;}
     .features-grid{grid-template-columns:1fr;}
     .platform-grid{grid-template-columns:1fr;}
+    /* the 999px pill only reads as one control on a single row; wrapped, it needs a plain card */
+    .viewer-tabs{width:100%;border-radius:var(--radius);}
+    .viewer-tab{flex:1 1 40%;justify-content:center;padding:0 12px;font-size:0.85rem;border-radius:8px;}
+    .viewer-platforms{gap:2px;}
+    .platform-tab{padding:0 10px;font-size:0.8rem;}
     table.packages{font-size:0.8rem;}
     table.packages th, table.packages td{padding:12px;}
   }
@@ -197,6 +264,7 @@
     </a>
     <span class="breadcrumb"><a href="../index.html">Products</a> / Pysar</span>
     <nav class="links" aria-label="Primary">
+      <a href="#viewer">Viewer</a>
       <a href="#features">Features</a>
       <a href="#packages">Packages</a>
       <a href="#platforms">Platforms</a>
@@ -230,6 +298,117 @@
     .<span class="tok-fn">Build</span>();
 
 <span class="tok-kw">await new</span> <span class="tok-type">SkiaReportRenderer</span>().<span class="tok-fn">SavePdfAsync</span>(report, <span class="tok-str">"hello.pdf"</span>);</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section id="viewer" class="container">
+    <div class="section-head fade-up">
+      <p class="section-tag">Viewer</p>
+      <h2>The same report on every device</h2>
+      <p>Pick a UI framework and a target — every combination renders identical pages: same totals, same pagination, same zoomable viewer.</p>
+    </div>
+    <div class="viewer fade-up" data-shape="phone">
+      <div class="viewer-tabs" role="tablist" aria-label="UI framework">
+        <button class="viewer-tab" role="tab" type="button" id="fwt-maui" aria-controls="fwp-maui" aria-selected="true" tabindex="0">.NET MAUI</button>
+        <button class="viewer-tab" role="tab" type="button" id="fwt-avalonia" aria-controls="fwp-avalonia" aria-selected="false" tabindex="-1">Avalonia</button>
+        <button class="viewer-tab" role="tab" type="button" id="fwt-blazor" aria-controls="fwp-blazor" aria-selected="false" tabindex="-1">Blazor</button>
+        <button class="viewer-tab" role="tab" type="button" id="fwt-wpf" aria-controls="fwp-wpf" aria-selected="false" tabindex="-1">WPF</button>
+      </div>
+      <div class="viewer-frame" role="tabpanel" id="fwp-maui" aria-labelledby="fwt-maui">
+        <div class="viewer-platforms" role="tablist" aria-label=".NET MAUI target">
+          <button class="platform-tab" role="tab" type="button" id="pt-maui-ios" data-shape="phone" aria-controls="pp-maui-ios" aria-selected="true" tabindex="0">iOS</button>
+          <button class="platform-tab" role="tab" type="button" id="pt-maui-android" data-shape="phone" aria-controls="pp-maui-android" aria-selected="false" tabindex="-1">Android</button>
+          <button class="platform-tab" role="tab" type="button" id="pt-maui-maccatalyst" data-shape="desktop" aria-controls="pp-maui-maccatalyst" aria-selected="false" tabindex="-1">Mac Catalyst</button>
+          <button class="platform-tab" role="tab" type="button" id="pt-maui-windows" data-shape="desktop" aria-controls="pp-maui-windows" aria-selected="false" tabindex="-1" data-soon>Windows</button>
+        </div>
+        <div class="viewer-stage">
+          <div class="viewer-panel active" role="tabpanel" id="pp-maui-ios" aria-labelledby="pt-maui-ios">
+            <picture>
+              <source srcset="assets/viewer-maui-ios.webp" type="image/webp">
+              <img src="assets/viewer-maui-ios.png" width="739" height="1400" loading="lazy" decoding="async" alt="The Pysar viewer in a .NET MAUI app on iPhone 17 running iOS 26.4, showing the Revenue by Customer report at 49% zoom.">
+            </picture>
+          </div>
+          <div class="viewer-panel" role="tabpanel" id="pp-maui-android" aria-labelledby="pt-maui-android">
+            <picture>
+              <source srcset="assets/viewer-maui-android.webp" type="image/webp">
+              <img src="assets/viewer-maui-android.png" width="697" height="1400" loading="lazy" decoding="async" alt="The Pysar viewer in a .NET MAUI app on a Pixel 9a emulator, showing the same Revenue by Customer report at 50% zoom.">
+            </picture>
+          </div>
+          <div class="viewer-panel" role="tabpanel" id="pp-maui-maccatalyst" aria-labelledby="pt-maui-maccatalyst">
+            <picture>
+              <source srcset="assets/viewer-maui-maccatalyst.webp" type="image/webp">
+              <img src="assets/viewer-maui-maccatalyst.png" width="1800" height="1188" loading="lazy" decoding="async" alt="The Pysar viewer in a .NET MAUI Mac Catalyst app, showing the Revenue by Customer report at 80% zoom with $971,320 total revenue across 104 orders.">
+            </picture>
+          </div>
+          <div class="viewer-panel" role="tabpanel" id="pp-maui-windows" aria-labelledby="pt-maui-windows">
+            <div class="viewer-soon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              <p>.NET MAUI on Windows — screenshot on the way. The integration ships today; only this capture is pending.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="viewer-frame" role="tabpanel" id="fwp-avalonia" aria-labelledby="fwt-avalonia" hidden>
+        <div class="viewer-platforms" role="tablist" aria-label="Avalonia target">
+          <button class="platform-tab" role="tab" type="button" id="pt-avalonia-ios" data-shape="phone" aria-controls="pp-avalonia-ios" aria-selected="true" tabindex="0" data-soon>iOS</button>
+          <button class="platform-tab" role="tab" type="button" id="pt-avalonia-android" data-shape="phone" aria-controls="pp-avalonia-android" aria-selected="false" tabindex="-1" data-soon>Android</button>
+          <button class="platform-tab" role="tab" type="button" id="pt-avalonia-maccatalyst" data-shape="desktop" aria-controls="pp-avalonia-maccatalyst" aria-selected="false" tabindex="-1" data-soon>Mac Catalyst</button>
+          <button class="platform-tab" role="tab" type="button" id="pt-avalonia-windows" data-shape="desktop" aria-controls="pp-avalonia-windows" aria-selected="false" tabindex="-1" data-soon>Windows</button>
+          <button class="platform-tab" role="tab" type="button" id="pt-avalonia-linux" data-shape="desktop" aria-controls="pp-avalonia-linux" aria-selected="false" tabindex="-1" data-soon>Linux</button>
+        </div>
+        <div class="viewer-stage">
+          <div class="viewer-panel active" role="tabpanel" id="pp-avalonia-ios" aria-labelledby="pt-avalonia-ios">
+            <div class="viewer-soon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              <p>Avalonia on iOS — screenshot on the way. The integration ships today; only this capture is pending.</p>
+            </div>
+          </div>
+          <div class="viewer-panel" role="tabpanel" id="pp-avalonia-android" aria-labelledby="pt-avalonia-android">
+            <div class="viewer-soon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              <p>Avalonia on Android — screenshot on the way. The integration ships today; only this capture is pending.</p>
+            </div>
+          </div>
+          <div class="viewer-panel" role="tabpanel" id="pp-avalonia-maccatalyst" aria-labelledby="pt-avalonia-maccatalyst">
+            <div class="viewer-soon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              <p>Avalonia on Mac Catalyst — screenshot on the way. The integration ships today; only this capture is pending.</p>
+            </div>
+          </div>
+          <div class="viewer-panel" role="tabpanel" id="pp-avalonia-windows" aria-labelledby="pt-avalonia-windows">
+            <div class="viewer-soon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              <p>Avalonia on Windows — screenshot on the way. The integration ships today; only this capture is pending.</p>
+            </div>
+          </div>
+          <div class="viewer-panel" role="tabpanel" id="pp-avalonia-linux" aria-labelledby="pt-avalonia-linux">
+            <div class="viewer-soon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              <p>Avalonia on Linux — screenshot on the way. The integration ships today; only this capture is pending.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="viewer-frame" role="tabpanel" id="fwp-blazor" aria-labelledby="fwt-blazor" data-shape="desktop" hidden>
+        <div class="viewer-stage">
+          <div class="viewer-panel active" id="pp-blazor-browser">
+            <div class="viewer-soon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              <p>Blazor on Browser — screenshot on the way. The integration ships today; only this capture is pending.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="viewer-frame" role="tabpanel" id="fwp-wpf" aria-labelledby="fwt-wpf" data-shape="desktop" hidden>
+        <div class="viewer-stage">
+          <div class="viewer-panel active" id="pp-wpf-windows">
+            <div class="viewer-soon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              <p>WPF on Windows — screenshot on the way. The integration ships today; only this capture is pending.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -364,6 +543,65 @@
   } else {
     document.querySelectorAll('.fade-up').forEach((el) => el.classList.add('visible'));
   }
+
+  document.querySelectorAll('.viewer').forEach((viewer) => {
+    // The stage reserves a different height for phone and desktop mockups, so every
+    // selection — framework or target — re-publishes the shape of what is on screen.
+    const applyShape = (frame) => {
+      const active = frame.querySelector('[role="tab"][aria-selected="true"]');
+      viewer.dataset.shape = (active || frame).dataset.shape;
+    };
+
+    const bindTablist = (list, reveal, onSelect) => {
+      const tabs = Array.from(list.querySelectorAll('[role="tab"]'));
+
+      const select = (tab) => {
+        for (const t of tabs) {
+          const selected = t === tab;
+          t.setAttribute('aria-selected', String(selected));
+          t.tabIndex = selected ? 0 : -1;
+          reveal(document.getElementById(t.getAttribute('aria-controls')), selected);
+        }
+        onSelect(tab);
+      };
+
+      for (const tab of tabs) {
+        tab.addEventListener('click', () => select(tab));
+      }
+
+      list.addEventListener('keydown', (event) => {
+        const current = tabs.indexOf(document.activeElement);
+        if (current < 0) return;
+        const target = { ArrowLeft: current - 1, ArrowRight: current + 1, Home: 0, End: tabs.length - 1 }[event.key];
+        if (target === undefined) return;
+        event.preventDefault();
+        const next = tabs[(target + tabs.length) % tabs.length];
+        next.focus();
+        select(next);
+      });
+    };
+
+    // Only the visible panel's image is lazy-loaded by the browser; the rest sit behind
+    // visibility:hidden and would download on first click. Warm them as the section nears view.
+    const warm = new IntersectionObserver((entries, self) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      for (const img of viewer.querySelectorAll('img')) img.loading = 'eager';
+      self.disconnect();
+    }, { rootMargin: '200px' });
+    warm.observe(viewer);
+
+    const showFrame = (el, on) => el.toggleAttribute('hidden', !on);
+    const showPanel = (el, on) => el.classList.toggle('active', on);
+
+    for (const frame of viewer.querySelectorAll('.viewer-frame')) {
+      const targets = frame.querySelector('.viewer-platforms');
+      if (targets) bindTablist(targets, showPanel, () => applyShape(frame));
+    }
+
+    const frameworks = viewer.querySelector('.viewer-tabs');
+    bindTablist(frameworks, showFrame, (tab) => applyShape(document.getElementById(tab.getAttribute('aria-controls'))));
+    applyShape(viewer.querySelector('.viewer-frame:not([hidden])'));
+  });
 </script>
 </body>
 </html>
