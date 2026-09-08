@@ -133,25 +133,39 @@
   .section-head h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:12px;}
   .section-head p{color:var(--color-muted-fg);font-size:1.02rem;}
 
-  /* preview screenshot stack */
-  .dashboard-wrap{padding:0 20px 70px;max-width:920px;margin:0 auto;}
-  .dashboard-stack{
-    position:relative;width:100%;aspect-ratio:16/11;
-    opacity:0;transform:translateY(24px);
-    transition:opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1);
+  /* preview screenshots, one editor at a time */
+  .shots{margin-bottom:70px;--ar:3680/2288;}
+  .shots[data-shot="vs"]{--ar:2784/1814;}
+  .shots-tabs{
+    display:flex;justify-content:center;flex-wrap:wrap;gap:4px;width:max-content;max-width:100%;
+    margin:0 auto 28px;padding:4px;
+    background:var(--color-muted);border:1px solid var(--color-border);border-radius:999px;
   }
-  .dashboard-stack.visible{opacity:1;transform:translateY(0);}
-  .dashboard-card{position:absolute;border-radius:12px;overflow:hidden;transition:transform .4s cubic-bezier(.22,1,.36,1);}
-  .dashboard-card img{display:block;width:100%;height:auto;}
-  .dashboard-front{width:70%;top:0;left:0;z-index:3;}
-  .dashboard-mid{width:70%;top:12%;left:15%;z-index:2;}
-  .dashboard-back{width:70%;top:24%;left:30%;z-index:1;}
-  .dashboard-front:hover, .dashboard-mid:hover, .dashboard-back:hover{transform:scale(1.03);}
-  @media (prefers-reduced-motion: reduce){
-    .dashboard-stack{transition:none;}
+  .shots-tab{
+    display:inline-flex;align-items:center;gap:9px;justify-content:center;
+    min-height:44px;padding:0 20px;border:0;border-radius:999px;background:transparent;
+    font-family:inherit;font-size:0.9rem;font-weight:600;color:var(--color-muted-fg);cursor:pointer;
+    transition:color .18s var(--ease), background-color .18s var(--ease);
   }
-  .plugin-shot{width:100%;border-radius:8px;border:1px solid var(--color-border);margin-bottom:18px;display:block;transition:transform .3s cubic-bezier(.16,1,.3,1);}
-  .plugin-shot:hover{transform:scale(1.02);}
+  .shots-tab:hover{color:var(--color-foreground);}
+  .shots-tab[aria-selected="true"]{
+    background:var(--color-background);color:var(--color-foreground);
+    box-shadow:0 1px 3px rgba(20,19,18,0.14);
+  }
+  .shots-tab img{width:18px;height:18px;object-fit:contain;display:block;}
+  /* The stage takes the active shot's own ratio, so the image fills it exactly — that keeps a
+     frame drawn on the edges of the picture rather than around empty letterbox bands. */
+  .shots-stage{position:relative;width:100%;aspect-ratio:var(--ar);}
+  .shot-panel{position:absolute;inset:0;visibility:hidden;}
+  .shot-panel.active{visibility:visible;animation:shotIn .35s var(--ease) both;}
+  @keyframes shotIn{0%{opacity:0;transform:scale(0.985);}100%{opacity:1;transform:none;}}
+  .shot-panel img{display:block;width:100%;height:100%;object-fit:contain;}
+  /* design-rider and design-vscode are transparent mockups that carry their own corners and
+     shadow; design-vs is an opaque edge-to-edge capture and needs the frame drawn for it. */
+  .shot-panel.is-framed img{
+    border-radius:var(--radius);border:1px solid var(--color-border);
+    box-shadow:0 30px 60px -30px rgba(20,19,18,0.25);
+  }
   /* plugin cards */
   .plugins-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
   .plugin-card{
@@ -203,6 +217,9 @@
   }
   @media (max-width:520px){
     .notice{flex-direction:column;}
+    /* the 999px pill only reads as one control on a single row; wrapped, it needs a plain card */
+    .shots-tabs{width:100%;border-radius:var(--radius);}
+    .shots-tab{flex:1 1 45%;padding:0 10px;font-size:0.82rem;border-radius:8px;}
   }
 </style>
 </head>
@@ -296,16 +313,36 @@
       <p><strong>Pysar.Design is in early development.</strong> No build is available yet, for any editor. It will most likely ship as a paid product once released — pricing isn't finalized. The syntax-highlighting plugin above stays free regardless.</p>
     </div>
 
-    <div class="dashboard-wrap">
-      <div class="dashboard-stack">
-        <div class="dashboard-card dashboard-front">
-          <img src="assets/design-vscode.png" alt="Early Pysar.Design preview pane in VS Code, showing a .rxaml source file next to a rendered report preview">
+    <div class="shots fade-up" data-shot="rider">
+      <div class="shots-tabs" role="tablist" aria-label="Editor">
+        <button class="shots-tab" role="tab" type="button" id="shot-tab-rider" data-shot="rider" aria-controls="shot-rider" aria-selected="true" tabindex="0">
+          <img src="../../assets/logos/rider.webp" width="18" height="18" alt="">Rider
+        </button>
+        <button class="shots-tab" role="tab" type="button" id="shot-tab-vs" data-shot="vs" aria-controls="shot-vs" aria-selected="false" tabindex="-1">
+          <img src="../../assets/logos/vs.svg" width="18" height="18" alt="">Visual Studio
+        </button>
+        <button class="shots-tab" role="tab" type="button" id="shot-tab-vscode" data-shot="vscode" aria-controls="shot-vscode" aria-selected="false" tabindex="-1">
+          <img src="../../assets/logos/vscode.svg" width="18" height="18" alt="">VS Code
+        </button>
+      </div>
+      <div class="shots-stage">
+        <div class="shot-panel active" role="tabpanel" id="shot-rider" aria-labelledby="shot-tab-rider">
+          <picture>
+            <source srcset="assets/design-rider.webp" type="image/webp">
+            <img src="assets/design-rider.png" width="3680" height="2288" loading="lazy" decoding="async" alt="Early Pysar.Design preview pane in Rider: a MasterDetailReportXaml.rxaml source file on the left, the rendered Annual Report page on the right.">
+          </picture>
         </div>
-        <div class="dashboard-card dashboard-mid">
-          <img src="assets/design-rider.png" alt="Early Pysar.Design preview pane in Rider">
+        <div class="shot-panel is-framed" role="tabpanel" id="shot-vs" aria-labelledby="shot-tab-vs">
+          <picture>
+            <source srcset="assets/design-vs.webp" type="image/webp">
+            <img src="assets/design-vs.png" width="2784" height="1814" loading="lazy" decoding="async" alt="Early Pysar.Design preview pane in Visual Studio, showing the same .rxaml source and rendered Annual Report side by side.">
+          </picture>
         </div>
-        <div class="dashboard-card dashboard-back">
-          <img src="assets/design-vs.png" alt="Early Pysar.Design preview pane in Visual Studio">
+        <div class="shot-panel" role="tabpanel" id="shot-vscode" aria-labelledby="shot-tab-vscode">
+          <picture>
+            <source srcset="assets/design-vscode.webp" type="image/webp">
+            <img src="assets/design-vscode.png" width="3680" height="2288" loading="lazy" decoding="async" alt="Early Pysar.Design preview pane in VS Code, showing the same .rxaml source and rendered Annual Report side by side.">
+          </picture>
         </div>
       </div>
     </div>
@@ -313,7 +350,6 @@
     <div class="plugins-grid" style="margin-top:44px;">
 
       <div class="plugin-card fade-up">
-        <img class="plugin-shot" src="assets/design-rider.png" alt="Early Pysar.Design preview pane in Rider">
         <div class="plugin-top">
           <div class="plugin-icon plugin-icon-logo">
             <img src="../../assets/logos/rider.webp" alt="">
@@ -329,7 +365,6 @@
       </div>
 
       <div class="plugin-card fade-up" style="transition-delay:.06s">
-        <img class="plugin-shot" src="assets/design-vs.png" alt="Early Pysar.Design preview pane in Visual Studio">
         <div class="plugin-top">
           <div class="plugin-icon plugin-icon-logo">
             <img src="../../assets/logos/vs.svg" alt="">
@@ -345,7 +380,6 @@
       </div>
 
       <div class="plugin-card fade-up" style="transition-delay:.12s">
-        <img class="plugin-shot" src="assets/design-vscode.png" alt="Early Pysar.Design preview pane in VS Code">
         <div class="plugin-top">
           <div class="plugin-icon plugin-icon-logo">
             <img src="../../assets/logos/vscode.svg" alt="">
@@ -410,10 +444,48 @@
         }
       }
     }, { threshold: 0.15 });
-    document.querySelectorAll('.fade-up, .dashboard-stack').forEach((el) => io.observe(el));
+    document.querySelectorAll('.fade-up').forEach((el) => io.observe(el));
   } else {
-    document.querySelectorAll('.fade-up, .dashboard-stack').forEach((el) => el.classList.add('visible'));
+    document.querySelectorAll('.fade-up').forEach((el) => el.classList.add('visible'));
   }
+
+  document.querySelectorAll('.shots').forEach((shots) => {
+    const tabs = Array.from(shots.querySelectorAll('[role="tab"]'));
+
+    // Only the visible panel's image is lazy-loaded by the browser; the rest sit behind
+    // visibility:hidden and would download on first click. Warm them as the section nears view.
+    const warm = new IntersectionObserver((entries, self) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      for (const img of shots.querySelectorAll('.shot-panel img')) img.loading = 'eager';
+      self.disconnect();
+    }, { rootMargin: '200px' });
+    warm.observe(shots);
+
+    const select = (tab) => {
+      shots.dataset.shot = tab.dataset.shot;
+      for (const t of tabs) {
+        const selected = t === tab;
+        t.setAttribute('aria-selected', String(selected));
+        t.tabIndex = selected ? 0 : -1;
+        document.getElementById(t.getAttribute('aria-controls')).classList.toggle('active', selected);
+      }
+    };
+
+    for (const tab of tabs) {
+      tab.addEventListener('click', () => select(tab));
+    }
+
+    shots.querySelector('[role="tablist"]').addEventListener('keydown', (event) => {
+      const current = tabs.indexOf(document.activeElement);
+      if (current < 0) return;
+      const target = { ArrowLeft: current - 1, ArrowRight: current + 1, Home: 0, End: tabs.length - 1 }[event.key];
+      if (target === undefined) return;
+      event.preventDefault();
+      const next = tabs[(target + tabs.length) % tabs.length];
+      next.focus();
+      select(next);
+    });
+  });
 </script>
 </body>
 </html>
