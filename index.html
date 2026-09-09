@@ -280,11 +280,53 @@
     transition:border-color .2s var(--ease), transform .2s var(--ease);
   }
   .card-featured{
+    position:relative;
+    overflow:hidden;
+    isolation:isolate;
     border-color:rgba(29,122,74,0.25);
-    background:linear-gradient(160deg,var(--color-surface),rgba(29,122,74,0.04));
+    background:var(--color-surface);
     display:flex;flex-direction:column;
+    /* the copy stops at 62% so the artwork gets a column of its own; without it the
+       scrim has to cover the whole card and the image can never actually be seen */
+    padding-right:38%;
   }
+  /* Tilted: background-image cannot be rotated, so the layer itself is rotated and
+     oversized. A rect rotated by 8deg must be >=108% wide and >=122% tall to still
+     cover the card; 150%/185% clears that at every breakpoint. Fully desaturated so it
+     reads as grey texture in the site palette rather than a colour screenshot. */
+  .card-featured::before{
+    content:"";
+    position:absolute;
+    top:50%; left:50%;
+    width:150%; height:185%;
+    transform:translate(-50%,-50%) rotate(-8deg);
+    /* framed onto the report page itself: on a light card the dark editor chrome is what
+       shows through, so keeping its edges out of frame leaves only grey document rows */
+    background:url("assets/pysar-ide.webp") 96% 10% / auto 140% no-repeat;
+    filter:grayscale(1) contrast(0.92) blur(1px);
+    pointer-events:none;
+    z-index:0;
+  }
+  /* The screenshot and the scrim are separate layers: filtering them together would
+     blur the gradient too, and the gradient is what keeps the copy readable. */
+  .card-featured::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    /* strictly horizontal: a tilted gradient drags the bottom of the text column into
+       its transparent end, which is what sank contrast to 2:1 on the diagonal version */
+    background:linear-gradient(90deg,
+      rgba(255,255,255,0.96) 0%,
+      rgba(255,255,255,0.95) 63%,
+      rgba(255,255,255,0.30) 82%,
+      rgba(255,255,255,0.06) 100%);
+    pointer-events:none;
+    z-index:0;
+  }
+  .card-featured > *{position:relative;z-index:1;}
   .card-featured:hover{transform:translateY(-3px);}
+  .card-featured .btn-secondary{background:rgba(255,255,255,0.82);}
+  .card-featured .tag{background:rgba(255,255,255,0.72);}
   .product-badge{
     display:inline-flex;align-items:center;gap:6px;
     align-self:flex-start;
@@ -432,6 +474,16 @@
     nav.links{display:none;}
     .menu-toggle{display:inline-flex;}
     .products-grid{grid-template-columns:1fr;}
+    /* one column: the copy needs the full width again, so the artwork loses its column
+       and drops back to faint texture across the whole card */
+    .card-featured{padding-right:32px;}
+    .card-featured::before{opacity:0.30;}
+    .card-featured::after{
+      background:linear-gradient(90deg,
+        rgba(255,255,255,0.96) 0%,
+        rgba(255,255,255,0.93) 60%,
+        rgba(255,255,255,0.82) 100%);
+    }
     .showcase{grid-template-columns:1fr;gap:40px;}
     .showcase .code-window{order:-1;}
   }
@@ -470,7 +522,6 @@
 
   <!-- HERO -->
   <section class="hero container">
-    <span class="eyebrow fade-in-up" style="animation-delay:0s"><span class="dot"></span> Now shipping — Pysar 0.x, open source</span>
     <h1 class="hero-title fade-in-up" style="animation-delay:.08s">Developer tools that respect <span class="accent">your stack.</span></h1>
     <p class="hero-sub fade-in-up" style="animation-delay:.16s">Mriya Lab builds cross-platform .NET libraries with no hidden fees, no vendor lock-in, and no Windows-only asterisks. First up: Pysar, a vector report engine that runs everywhere .NET does.</p>
     <div class="hero-actions fade-in-up" style="animation-delay:.22s">
