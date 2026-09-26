@@ -353,7 +353,7 @@
       <div class="viewer-frame" role="tabpanel" id="fwp-avalonia" aria-labelledby="fwt-avalonia" hidden>
         <div class="viewer-platforms" role="tablist" aria-label="Avalonia target">
           <button class="platform-tab" role="tab" type="button" id="pt-avalonia-ios" data-shape="phone" aria-controls="pp-avalonia-ios" aria-selected="true" tabindex="0">iOS</button>
-          <button class="platform-tab" role="tab" type="button" id="pt-avalonia-android" data-shape="phone" aria-controls="pp-avalonia-android" aria-selected="false" tabindex="-1" data-soon>Android</button>
+          <button class="platform-tab" role="tab" type="button" id="pt-avalonia-android" data-shape="phone" aria-controls="pp-avalonia-android" aria-selected="false" tabindex="-1">Android</button>
           <button class="platform-tab" role="tab" type="button" id="pt-avalonia-macos" data-shape="desktop" aria-controls="pp-avalonia-macos" aria-selected="false" tabindex="-1">macOS</button>
           <button class="platform-tab" role="tab" type="button" id="pt-avalonia-windows" data-shape="desktop" aria-controls="pp-avalonia-windows" aria-selected="false" tabindex="-1" data-soon>Windows</button>
           <button class="platform-tab" role="tab" type="button" id="pt-avalonia-linux" data-shape="desktop" aria-controls="pp-avalonia-linux" aria-selected="false" tabindex="-1" data-soon>Linux</button>
@@ -367,10 +367,10 @@
             </picture>
           </div>
           <div class="viewer-panel" role="tabpanel" id="pp-avalonia-android" aria-labelledby="pt-avalonia-android">
-            <div class="viewer-soon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-              <p>Avalonia on Android — screenshot on the way. The integration ships today; only this capture is pending.</p>
-            </div>
+            <picture>
+              <source srcset="assets/viewer-avalonia-android.webp" type="image/webp">
+              <img src="assets/viewer-avalonia-android.png" width="868" height="1726" loading="lazy" decoding="async" alt="The Pysar viewer in an Avalonia app on a Pixel 9a emulator, showing an Annual Report at 36% zoom.">
+            </picture>
           </div>
           <div class="viewer-panel" role="tabpanel" id="pp-avalonia-macos" aria-labelledby="pt-avalonia-macos">
             <picture>
@@ -402,7 +402,7 @@
         <div class="viewer-platforms" role="tablist" aria-label="Uno target">
           <button class="platform-tab" role="tab" type="button" id="pt-uno-web" data-shape="desktop" aria-controls="pp-uno-web" aria-selected="true" tabindex="0">Web</button>
           <button class="platform-tab" role="tab" type="button" id="pt-uno-desktop" data-shape="desktop" aria-controls="pp-uno-desktop" aria-selected="false" tabindex="-1">Desktop</button>
-          <button class="platform-tab" role="tab" type="button" id="pt-uno-mobile" data-shape="phone" aria-controls="pp-uno-mobile" aria-selected="false" tabindex="-1" data-soon>Mobile</button>
+          <button class="platform-tab" role="tab" type="button" id="pt-uno-android" data-shape="phone" aria-controls="pp-uno-android" aria-selected="false" tabindex="-1">Android</button>
         </div>
         <div class="viewer-stage">
           <div class="viewer-panel active" role="tabpanel" id="pp-uno-web" aria-labelledby="pt-uno-web">
@@ -417,11 +417,11 @@
               <img src="assets/viewer-uno-desktop.png" width="2000" height="1247" loading="lazy" decoding="async" alt="The Pysar viewer in an Uno Platform desktop app, showing an Annual Report at 110% zoom.">
             </picture>
           </div>
-          <div class="viewer-panel" role="tabpanel" id="pp-uno-mobile" aria-labelledby="pt-uno-mobile">
-            <div class="viewer-soon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-              <p>Uno on mobile — screenshot on the way. The integration ships today; only this capture is pending.</p>
-            </div>
+          <div class="viewer-panel" role="tabpanel" id="pp-uno-android" aria-labelledby="pt-uno-android">
+            <picture>
+              <source srcset="assets/viewer-uno-android.webp" type="image/webp">
+              <img src="assets/viewer-uno-android.png" width="868" height="1726" loading="lazy" decoding="async" alt="The Pysar viewer in an Uno Platform app on a Pixel 9a emulator, showing the Revenue by Customer report at 50% zoom.">
+            </picture>
           </div>
         </div>
       </div>
@@ -531,7 +531,7 @@
       <div class="platform-card">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="7" height="14" rx="1.5"/><rect x="12" y="7" width="9" height="8" rx="1.5"/></svg>
         <h3>Uno</h3>
-        <p>Mobile, web &amp; desktop</p>
+        <p>Android, web &amp; desktop</p>
       </div>
       <div class="platform-card">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
